@@ -3,19 +3,18 @@ $(document).ready(function () {
   var playlistId;
   var playlistUrl;
   var reverse;
+  var myChart;
   var playlistTitle;
+  var views = [];
+  var episodeNumber = [];
 
-  var drawGraph = function (statistics) {
-    var views = [];
-    var episodeNumber = []
-    for (var i = 0; i < statistics.length; i++) {
-      views.push(parseInt(statistics[i].statistics.viewCount));
-      episodeNumber.push(i + 1);
-    }
-    views = reverse ? views.reverse() : views;
+  var drawGraph = function (views, episodeNumber) {
+    $('iframe').remove();
+    $('#myChart').empty();
+    views = reverse ? views.reverse(): views;
     var color = 'rgba(255, 99, 132, 0.8)';
     var ctx = document.getElementById("myChart");
-    var myChart = new Chart(ctx, {
+    myChart = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: episodeNumber,
@@ -26,8 +25,11 @@ $(document).ready(function () {
             }]
         },
         options: {
-          scales: { yAxes: [{ ticks: { beginAtZero:false }}]},
-          responsive: false,
+          scales: {
+            xAxes: [{ ticks: { display: false}}],
+            yAxes: [{ ticks: { beginAtZero:false }}]
+          },
+          responsive: true,
           title: {
             display: true,
             fontSize: 24,
@@ -48,11 +50,15 @@ $(document).ready(function () {
     $.ajax({
       url: videosUrl
     }).done(function (data) {
-      for (var i = 0; i < data.items.length; i++) {
-        statistics.push(data.items[i]);
-      }
+      data.items.forEach(function (element) {
+        statistics.push(element);
+      });
       if (ids <= 0) {
-        drawGraph(statistics);
+        statistics.forEach(function (item) {
+          views.push(parseInt(item.statistics.viewCount));
+          episodeNumber.push(item.snippet.title);
+        });
+        drawGraph(views, episodeNumber);
       } else {
         getViewsByIds(ids, statistics);
       }
@@ -64,14 +70,13 @@ $(document).ready(function () {
       url: url + '&pageToken=' + nextPageToken
     }).done(function (data) {
       var totalIds = data.pageInfo.totalResults;
-      for (var i = 0; i < data.items.length; i++) {
-        collectedIds.push(data.items[i].snippet.resourceId.videoId);
-      }
+      data.items.forEach(function (item) {
+        collectedIds.push(item.snippet.resourceId.videoId);
+      });
       if(collectedIds.length >= totalIds) { //done
         getViewsByIds(collectedIds, []);
       } else {
-        var nextPageToken = data.nextPageToken;
-        getIds(url, collectedIds, nextPageToken);
+        getIds(url, collectedIds, data.nextPageToken);
       }
     });
   }
@@ -89,5 +94,11 @@ $(document).ready(function () {
         playlistTitle = data.items[0].snippet.title
         getIds(playlistUrl, [], '');
     });
+  });
+
+  $('#reverse').change(function () {
+    reverse = !reverse;
+    if (myChart) drawGraph(views, episodeNumber);
+    reverse = !reverse;
   });
 });

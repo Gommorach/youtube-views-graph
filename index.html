@@ -13,7 +13,7 @@
       <h1>Youtube playlist graph</h1>
         <div>
           <label for="key">Your YouTube api key: </label>
-            <input type="text"  class="form-control" id="key" class="form-control" placeholder="your api key">
+            <input type="text"  class="form-control" id="key" class="form-control" placeholder="your api key" autofocus>
         </div>
         <br>
         <div>
@@ -23,13 +23,14 @@
         <br>
         <div>
           <label class="form-check-label">
-            <input type="checkbox" id="reverse" value="reverse"> Reverse
+            <input type="checkbox" id="reverse" value="reverse"> Reverse order
           </label>
         </div>
-        <button class="btn btn-lg btn-info" id="drawGraph">
+        <button class="btn btn-lg btn-info" id="drawGraph" style="float:left;">
           Draw graph
         </button>
+      <canvas id="myChart"></canvas>
       </div>
-    <canvas id="myChart" width="1500px" height="700px"></canvas>
+      
   </body>
 </html>
